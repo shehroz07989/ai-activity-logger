@@ -1,20 +1,15 @@
-from api import retry_request
-from utils import json_return, filter_posts, display_posts
-def main():
-    url = "https://jsonplaceholder.typicode.com/posts"
-    params =  {"userId": 1}
-
-    response = retry_request(url,params)
-    if not response:
-        print("API Failled")
-        return
-    
-    data = json_return(response)
-    filter_ = filter_posts(data)
-    display_posts(filter_)
-    
-    
-    
+from api_client import APIClient
+from utils import status_check,clean_post,filter_post,display_post
+from dotenv import load_dotenv
+import os
+load_dotenv()
+header = os.getenv("API_KEY")
+api = APIClient(
+    base_url="https://reqres.in",
+    header={"x-api-key": header,}
+)
 
 
-main()
+
+result = api.request(endpoint="/api/login",method="post", json={"email": "eve.holt@reqres.in", "password": "cityslicka"})
+print(result)
