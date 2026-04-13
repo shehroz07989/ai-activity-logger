@@ -1,25 +1,49 @@
-import requests
-from api_client import  filter_fetch, request
+data = [
+    {"name": "Ali", "balance": "500"},
+    {"name": "Sara", "balance": "abc"},
+    {"name": "Ahmed"},
+    {"name": "", "balance": "300"},
+    {"balance": "200"},
+    "random_string",
+    12345,
+    {"name": "Zara", "balance": "-100"},
+    {"name": "Usman", "balance": "1500"}
+]
 
-class task_10:
-    def __init__(self,url):
-        self.url = url
 
-    def start_system(self):
-        data = request(self.url)
-        #first Waya: if isinstance(data,str):
-            #return data
-        #dosra way: api_client ke funcion ke andr 
-        if "Error" in data:
-            return data
+def validate(data):
+    if isinstance(data, list):
+        return True
+    else:
+        return False
 
-        
-        cleaner = filter_fetch(data)
-        print(cleaner)
 
-        
-        
-api = task_10("https://jsonplaceholder.typicode.com/po1sts")
-result = api.start_system()
-print (result)
-
+def validate_users(data):
+    validate_user = []
+    invalid_user = []
+    if validate(data):
+        for i in data:
+            if  not isinstance(i, dict):
+                invalid_user.append(i)
+                continue
+                          
+            elif i.get("name") and i.get("balance"):
+                    try:
+                        i["balance"] = int(i.get("balance"))
+                        if i["balance"] > 100:
+                            validate_user.append(i)
+                        else:
+                            invalid_user.append(i)
+                    except:
+                        invalid_user.append(i)
+            else:
+                invalid_user.append(i)
+            
+               
+                    
+        return {
+                "   Valid": validate_user,
+                "Invalid": invalid_user,
+            }
+result = validate_users(data)
+print(result)
