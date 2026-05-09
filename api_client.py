@@ -1,36 +1,33 @@
-import requests
-import time
+from fastapi import FastAPI, HTTPException
+import sqlite3
+from data_base import get_all_logs,get_log_by_id
+from utils import validate
 
-from utils import status_check,clean_post,filter_post,display_post
 
-from utils import status_check
-class APIClient:
-    def __init__(self,base_url,header):
-        self.base_url = base_url
-        self.header = header
-    def build_url(self, endpoint):
-        return self.base_url + endpoint
-         
-    def request(self,endpoint,params=None,json=None,method=None):
-        attempts = 0
-        url = self.build_url(endpoint)
-        while attempts < 3:
-            try:
-                if method == "get":
-                    response = requests.get(url,params=params,timeout=2)
-                elif method == "post":
-                    response = requests.post(url,headers=self.header,json=json,timeout=2)
-                data =status_check(response)
-                if isinstance(data,str):
-                    print(f"{data} Retry...")
-                else:
-                    return data
-            except requests.exceptions.Timeout:
-                print( "Time Out Error. Retry...")
-            except requests.exceptions.RequestException as e:
-                print( f"API Failled  {e} Retry...")
-            attempts += 1
-        return {
-            "Error": "Failled After Retry",
-        }
-            
+app = FastAPI()
+@app.get("/logs")
+def main_endpoint():
+    return get_all_logs()
+    
+@app.get("/logs/{user_id}")
+def get_by_id(user_id:int):
+    response =  get_log_by_id(user_id)
+    if response == "error_in_db" :
+        raise HTTPException(status_code=500,detail={
+            "response": None,
+            "error": "error_in_db",
+        })
+    elif response == "validation_failed":
+        raise HTTPException(status_code=400,detail={
+            "response": None,
+            "error": "Input must be between 1-100",
+        })
+    elif response is None:
+        raise HTTPException(status_code=404,detail={
+            "response": None,
+            "error": "not_found",
+        })
+    return {
+        "response": response,
+        "error": None,
+    }
