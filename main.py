@@ -1,4 +1,4 @@
-from utils import validate, call_api,filter_data,save_log,trace_loger
+from utils import validate, call_api,filter_data,save_log,trace_data
 import uuid
 
 
@@ -17,46 +17,42 @@ def main():
                 "attempts" : None,
                 "request_id": request_id
             }
-    trace_data = {
-        "request_id": request_id,
-        "step_name": None,
-        "step_order": None,
-        "status": None,
-        "error": None
-    }
     
-    #------------------------------- Validation Block --------------------------------------------
-   
+    
+    step = 0
+    can_continue = True
+    
     validated = validate(id)
+    step += 1
     log_data["status"] = validated["status"]
 
-
-    trace_data["step_name"] = "input_validation"
-    trace_data["step_order"] = 1
-    trace_data["status"] = validated["status"]
-    
-
-    
-    
     if validated["status"] != "success":
+        can_continue = False
         log_data["error"] = validated["error"]
-        trace_data["error"] = validated["error"]
-        trace_loger(trace_data)
-        save_db = save_log(log_data)
-        if save_db["status"] != "success":
-            return save_db
-        else:
-            return log_data
+
         
-    trace_loger(trace_data)
+    trace_data(
+        request_id=request_id,
+        step_name="input_validation",
+        step_order=step,
+        status=validated["status"],
+        error=validated["error"]
+        )
+    
+    
+    
 
-    cleaned_input = validated["result"]
-    log_data["cleaned_input"] = cleaned_input
+    
 
-    #----------------------------------- API Block + Loop -----------------------------------------------
-    attempts = 0
-    loop_status = "retry_exhausted"
-    while attempts < 3:
+    if can_continue:
+        
+        step += 1
+        cleaned_input = validated["result"]
+        log_data["cleaned_input"] = cleaned_input
+
+        attempts = 0
+        loop_status = "retry_exhausted"
+        while attempts < 3:
             attempts += 1
             errors = ["error_503", "time_out","connection_error"]
             called_api = call_api(cleaned_input)
@@ -71,60 +67,78 @@ def main():
             else:
                 loop_status = "success"
                 break
+        
+        log_data["attempts"] = attempts
+        log_data["status"] = called_api["status"]
 
-    #----------------------------- Decision Block (Loop) -------------------------------------------
- 
-    if loop_status == "non_retryable" or loop_status == "retry_exhausted":
-        log_data["status"] = called_api["status"]
-        log_data["error"] = called_api["error"]
-        log_data["attempts"] = attempts
-        save_db = save_log(log_data)
-        if save_db["status"] != "success":
-            return save_db
-        else:
-            return log_data
-    else:
-        log_data["attempts"] = attempts
-        log_data["status"] = called_api["status"]
+        if loop_status == "non_retryable" or loop_status == "retry_exhausted":
+            can_continue = False
+            log_data["error"] = called_api["error"]
+            
+    
+        trace_data(
+            request_id=request_id,
+            step_name="api_call",
+            step_order=step,
+            status=called_api["status"],
+            error=called_api["error"]
+            )
+
+
+    if can_continue:
+        step += 1
         raw_response = called_api["result"]
         log_data["raw_response"] = raw_response
 
-    #------------------------------------- Filtration Block ----------------------------------------------------
-    filtered_data = filter_data(raw_response,id)
-    log_data["status"] = filtered_data["status"]
-
-    trace_data["step_name"] = "output_filteration"
-    trace_data["step_order"] += 1
-    trace_data["status"] = validated["status"]
+        filtered_data = filter_data(raw_response,id)
+        log_data["status"] = filtered_data["status"]
 
 
-    if filtered_data["status"] != "success":
-        log_data["error"] = filtered_data["error"]
-        trace_data["error"] = validated["error"]
-        trace_loger(trace_data)
-        save_db = save_log(log_data)
 
-        if save_db["status"] != "success":
-            return save_db
-        else:
-            return log_data
-    trace_loger(trace_data)
+        if filtered_data["status"] != "success":
+            can_continue = False
+            log_data["error"] = filtered_data["error"]            
+            
+        trace_data(
+            request_id=request_id,
+            step_name="output_filtration",
+            step_order=step,
+            status=filtered_data["status"],
+            error=filtered_data["error"]
+            )
+
+    if can_continue:
+        log_data["post_id"] = filtered_data["result"]["id"]
+        log_data["title"] = filtered_data["result"]["title"]
+    
+    save = save_log(log_data)
+    step += 1
+
+    if save["status"] != "success":
+        
+        trace_data(
+            request_id=request_id,
+            step_name="save_log",
+            step_order=step,
+            status=save["status"],
+            error=save["error"]
+            ) 
+        return save
+        
+    trace_data(
+            request_id=request_id,
+            step_name="save_log",
+            step_order=step,
+            status=save["status"],
+            error=save["error"]
+            ) 
+    
+    return log_data
 
 
-    # ---------------------------------- Success Block ---------------------------------
-    log_data["post_id"] = filtered_data["result"]["id"]
-    log_data["title"] = filtered_data["result"]["title"]
-    save_db = save_log(log_data)
-
-    trace_data["step_name"] = "save_log"
-    trace_data["step_order"] += 1
-    trace_data["status"] = validated["status"]
+    
 
 
-    if save_db["status"] != "success":
-        return save_db
-    else:
-        return log_data
     
     
 
