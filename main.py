@@ -1,8 +1,11 @@
-from utils import validate, call_api,filter_data,save_log
+from utils import validate, call_api,filter_data,save_log,trace_loger
+import uuid
+
 
 def main():
-   
+    
     id = input("Enter id: ")
+    request_id = str(uuid.uuid4())
     log_data = {
                 "input": id,
                 "cleaned_input": None,
@@ -11,21 +14,41 @@ def main():
                 "error": None,
                 "title": None,
                 "raw_response": None,
-                "attempts" : None
+                "attempts" : None,
+                "request_id": request_id
             }
-   
+    trace_data = {
+        "request_id": request_id,
+        "step_name": None,
+        "step_order": None,
+        "status": None,
+        "error": None
+    }
+    
     #------------------------------- Validation Block --------------------------------------------
    
     validated = validate(id)
     log_data["status"] = validated["status"]
+
+
+    trace_data["step_name"] = "input_validation"
+    trace_data["step_order"] = 1
+    trace_data["status"] = validated["status"]
+    
+
+    
+    
     if validated["status"] != "success":
         log_data["error"] = validated["error"]
+        trace_data["error"] = validated["error"]
+        trace_loger(trace_data)
         save_db = save_log(log_data)
         if save_db["status"] != "success":
             return save_db
         else:
             return log_data
-   
+        
+    trace_loger(trace_data)
 
     cleaned_input = validated["result"]
     log_data["cleaned_input"] = cleaned_input
@@ -69,21 +92,42 @@ def main():
     #------------------------------------- Filtration Block ----------------------------------------------------
     filtered_data = filter_data(raw_response,id)
     log_data["status"] = filtered_data["status"]
+
+    trace_data["step_name"] = "output_filteration"
+    trace_data["step_order"] += 1
+    trace_data["status"] = validated["status"]
+
+
     if filtered_data["status"] != "success":
         log_data["error"] = filtered_data["error"]
+        trace_data["error"] = validated["error"]
+        trace_loger(trace_data)
         save_db = save_log(log_data)
+
         if save_db["status"] != "success":
             return save_db
         else:
             return log_data
+    trace_loger(trace_data)
+
+
     # ---------------------------------- Success Block ---------------------------------
     log_data["post_id"] = filtered_data["result"]["id"]
     log_data["title"] = filtered_data["result"]["title"]
     save_db = save_log(log_data)
+
+    trace_data["step_name"] = "save_log"
+    trace_data["step_order"] += 1
+    trace_data["status"] = validated["status"]
+
+
     if save_db["status"] != "success":
         return save_db
     else:
         return log_data
+    
+    
+
 result = main()
 print(result)
 

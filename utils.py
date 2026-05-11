@@ -125,8 +125,8 @@ def save_log(data):
         try:
             conn = sqlite3.connect("system.db")
             save = """
-                INSERT INTO logs (status, input, cleaned_input, error, post_id, title, raw_response,attempts)
-                VALUES( ?, ?, ?, ?, ?, ?, ?,?)
+                INSERT INTO logs (status, input, cleaned_input, error, post_id, title, raw_response,attempts,request_id)
+                VALUES( ?, ?, ?, ?, ?, ?, ?,?,?)
                 
                     """
             if isinstance (data["raw_response"],dict):
@@ -140,7 +140,7 @@ def save_log(data):
                 
             
             cursor = conn.cursor()
-            cursor.execute(save,(data["status"], data["input"], data["cleaned_input"], data["error"], data["post_id"], data["title"], data["raw_response"],data["attempts"]))
+            cursor.execute(save,(data["status"], data["input"], data["cleaned_input"], data["error"], data["post_id"], data["title"], data["raw_response"],data["attempts"],data["request_id"]))
             conn.commit()
             
             return build_response(
@@ -166,4 +166,30 @@ def save_log(data):
                 error = "allowed values dose not exist in status"
                     )
     
-   
+
+def trace_loger(trace_data):
+    conn = sqlite3.connect("system.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+                    INSERT INTO trace (request_id,step_name,step_order,status,error) 
+                    VALUES (:request_id,:step_name,:step_order,:status,:error)
+                        """,trace_data) 
+    conn.commit()
+    conn.close()
+
+
+def trace_data(
+        request_id,
+        step_name,
+        step_order,
+        status,
+        error = None
+        ):
+    data = {
+        "request_id": request_id,
+        "step_name": step_name,
+        "step_order": step_order,
+        "status": status,
+        "error": error
+    }
+    trace_loger(data)

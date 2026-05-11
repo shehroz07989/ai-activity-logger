@@ -31,8 +31,9 @@ def get_log_by_id(user_id:int):
         if response is None:
             return None
         response = dict(response)
-        print ("hello")
         return response
     except sqlite3.Error as e:
-        print (str(e))
+        
         return "error_in_db"        
+    finally:
+        conn.close()
