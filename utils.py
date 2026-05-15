@@ -128,8 +128,8 @@ def save_log(data):
         try:
             conn = sqlite3.connect("system.db")
             save = """
-                INSERT INTO logs (status, input, cleaned_input, error, post_id, title, raw_response,attempts,request_id)
-                VALUES( ?, ?, ?, ?, ?, ?, ?,?,?)
+                INSERT INTO logs (status, input, cleaned_input, error, post_id, title, raw_response,attempts,request_id,ai_generated,ai_explanation)
+                VALUES( ?, ?, ?, ?, ?, ?, ?,?,?,?,?)
                 
                     """
             if isinstance (data["raw_response"],dict):
@@ -143,7 +143,7 @@ def save_log(data):
                 
             
             cursor = conn.cursor()
-            cursor.execute(save,(data["status"], data["input"], data["cleaned_input"], data["error"], data["post_id"], data["title"], data["raw_response"],data["attempts"],data["request_id"]))
+            cursor.execute(save,(data["status"], data["input"], data["cleaned_input"], data["error"], data["post_id"], data["title"], data["raw_response"],data["attempts"],data["request_id"],data["ai_generated"],data["ai_explanation"]))
             conn.commit()
             
             return build_response(
@@ -197,19 +197,18 @@ def trace_data(
     }
     trace_loger(data)
 
-
-
-def ai_call():
+def ai_call(message):
     attempts = 0
-    status = True
     while attempts < 3:
         attempts += 1
+        status = True        
         data = {
-            "status": None,
+            "status":None,
             "result": None,
             "error": None
         }
         try:
+            
             response = requests.post(
                 url="https://openrouter.ai/api/v1/chat/completions",
                 headers={
@@ -218,29 +217,46 @@ def ai_call():
                 },
                 data=json.dumps(
                     {
-                    "model": "nvidia/nemotron-3-nano-30b-a3b:free",
+                    "model": "openai/gpt-oss-120b:free",
                     "messages": [
                         {
                             "role": "system",
-                            "content": "me 1 system bna rha ho jisme tumhara role ha error ya result explain krne ke maslan agr error milta ha tumhe ke input must be integer tumne english me likhna ha error aya qke user ne input me integer nhi dala ya string dali or tumhe strictly kha jata ha ke tumne sirf json return krna ha jo explanation kro ge tum usse 1 hi line me json me explanation key ke andr rakhna ha 1 hi or usi me explanation yhi tumhara kaam ha iske ilawa forbiden ha tumhare lia kuch bi krna "
+                            "content": "me 1 system bna rha ho jisme tumhara role ha error ya result explain krne ke maslan agr error milta ha tumhe ke input must be integer tumne english me likhna ha error aya qke user ne input me integer nhi dala ya string dali or tumhe strictly kha jata ha ke tumne sirf json return krna ha jo explanation kro ge tum usse 1 hi line me json me explanation key ke andr rakhna ha 1 hi or usi me explanation yhi tumhara kaam ha iske ilawa forbiden ha tumhare lia kuch bi krna agr status success hua to kehana ha ke user ne shi input dia pora workflow shi chala isse ache andaaz me likhna ha  "
                         },
                         {
                                "role": "user",
-                                 "content": "status: filtration_failled,error  required filed dose not exist"
+                                 "content": message,
                             }
                         ]
                     }
                 ),
                 timeout=60,
                 )
+            
             if  response.ok:
+                
                 json_parsing = validate_ai_response(response.json()['choices'][0]['message']['content'])
                 if json_parsing["status"] == "success":
-                     data.update({
-                        "status": "success",
-                        "result": json_parsing,
+                    data.update({
+                        "status": json_parsing["status"],
+                        "result": json_parsing["result"],
+                        "error": json_parsing["error"]
+                                })
+                    break
+                else:
+                    status = False
+                    data.update({
+                          "status": json_parsing["status"],
+                          "error": json_parsing["error"]
                     })
-                break
+                    continue
+            else:
+                status = False
+                data.update({
+                    "status": "ai_call_failed",
+                    "error":  f"status_code_error {response.status_code} ",
+                })
+                continue
         except requests.exceptions.Timeout:
             status = False
             data.update({
@@ -280,8 +296,4 @@ def ai_call():
             error=data["error"]
             )
     
-        
 
-
-
-print(ai_call())

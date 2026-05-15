@@ -25,20 +25,21 @@ def json_parse(data):
 def validate_ai_response(data):
     json_data = json_parse(data)
     if json_data["status"] == "success":
-        if "explanation" in json_data:
+        json_data = dict(json_data)
+        if "explanation" in json_data["result"]:
             return build_internal_response(
                 status="success",
-                result=json_data["explanation"],
+                result=json_data["result"]["explanation"],
                 error=None,
         )
         else:
             return build_internal_response(
-                status="success",
+                status="failed",
                 result=None,
                 error="explanation_key_not_exist"
             )
     return build_internal_response(
-            status="fail",
+            status="failed",
             result=None,
             error="data_not_json",  
             )

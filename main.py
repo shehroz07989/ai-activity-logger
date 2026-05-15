@@ -1,6 +1,6 @@
-from utils import validate, call_api,filter_data,save_log,trace_data
+from utils import validate, call_api,filter_data,save_log,trace_data,ai_call
 import uuid
-
+#---------------------niche dekh-----------------
 
 def main():
     
@@ -15,7 +15,9 @@ def main():
                 "title": None,
                 "raw_response": None,
                 "attempts" : None,
-                "request_id": request_id
+                "request_id": request_id,
+                "ai_generated": None,
+                "ai_explanation": None
             }
     
     
@@ -108,8 +110,43 @@ def main():
             )
 
     if can_continue:
+        step += 1
+
         log_data["post_id"] = filtered_data["result"]["id"]
         log_data["title"] = filtered_data["result"]["title"]
+
+        ai_called = ai_call(log_data["status"])#-----------yha se krna hw ke kia krna ha isme error bhjna ha ya staus or chatgpt ne bugs khe ha unpr dehaan dena ha
+        log_data["ai_explanation"] = ai_called["result"]
+        if ai_called["status"]== "success":
+            log_data["ai_generated"] = True
+        else:
+            log_data["ai_generated"] = False
+            
+        trace_data(
+            request_id=request_id,
+            step_name="ai_call",
+            step_order=step,
+            status=ai_called["status"],
+            error=ai_called["error"]
+            )
+    
+
+    if can_continue == False:
+        step += 1
+        ai_called = ai_call(log_data["error"])
+        log_data["ai_explanation"] = ai_called["result"]
+        if ai_called["status"]== "success":
+            log_data["ai_generated"] = True
+        else:
+            log_data["ai_generated"] = False
+        
+        trace_data(
+            request_id=request_id,
+            step_name="ai_call",
+            step_order=step,
+            status=ai_called["status"],
+            error=ai_called["error"]
+            )
     
     save = save_log(log_data)
     step += 1
