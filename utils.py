@@ -3,7 +3,6 @@ import sqlite3
 import time
 import json
 from fastapi import HTTPException
-from Internal_functions import build_internal_response, validate_ai_response
 def build_response(status,user_input,result,error):
     return {
         "status": status,
@@ -72,7 +71,7 @@ def call_api(data):
                             status = "api_failed",
                             user_input = data, 
                             result = None,
-                            error = f"status code error {response.status_code}"
+                            error = f"status code error {response.status_code} {response.text}"
                             )
 
 
@@ -197,103 +196,37 @@ def trace_data(
     }
     trace_loger(data)
 
-def ai_call(message):
-    attempts = 0
-    while attempts < 3:
-        attempts += 1
-        status = True        
-        data = {
-            "status":None,
-            "result": None,
-            "error": None
-        }
-        try:
-            
-            response = requests.post(
-                url="https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Accept": "application/json",
-                    "Authorization": "Bearer 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"
-                },
-                data=json.dumps(
-                    {
-                    "model": "openai/gpt-oss-120b:free",
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": "me 1 system bna rha ho jisme tumhara role ha error ya result explain krne ke maslan agr error milta ha tumhe ke input must be integer tumne english me likhna ha error aya qke user ne input me integer nhi dala ya string dali or tumhe strictly kha jata ha ke tumne sirf json return krna ha jo explanation kro ge tum usse 1 hi line me json me explanation key ke andr rakhna ha 1 hi or usi me explanation yhi tumhara kaam ha iske ilawa forbiden ha tumhare lia kuch bi krna agr status success hua to kehana ha ke user ne shi input dia pora workflow shi chala isse ache andaaz me likhna ha  "
-                        },
-                        {
-                               "role": "user",
-                                 "content": message,
-                            }
-                        ]
-                    }
-                ),
-                timeout=60,
-                )
-            
-            if  response.ok:
-                
-                json_parsing = validate_ai_response(response.json()['choices'][0]['message']['content'])
-                if json_parsing["status"] == "success":
-                    data.update({
-                        "status": json_parsing["status"],
-                        "result": json_parsing["result"],
-                        "error": json_parsing["error"]
-                                })
-                    break
-                else:
-                    status = False
-                    data.update({
-                          "status": json_parsing["status"],
-                          "error": json_parsing["error"]
-                    })
-                    continue
-            else:
-                status = False
-                data.update({
-                    "status": "ai_call_failed",
-                    "error":  f"status_code_error {response.status_code} ",
-                })
-                continue
-        except requests.exceptions.Timeout:
-            status = False
-            data.update({
-                "status": "ai_call_failed",
-                "error": "time_out"
-            })
-            continue
-        except requests.ConnectionError:
-            status = False
-            data.update({
-                "status": "ai_call_failed",
-                "error": "connection_error"
-            })
-            continue
-
-        except requests.exceptions.RequestException as e:
-            status = False
-            data.update({
-                "status": "ai_call_failed",
-                "error": str(e)
-            })
-            continue
-    
-
-    if status == True:
+def parse_json(data):
+    try:
+        json_data = json.loads(data)
         return build_response(
-            status=data["status"],
+            status="success",
             user_input=None,
-            result=data["result"],
+            result=json_data,
             error=None
         )
-    else:
+    except:
         return build_response(
-            status=data["status"],
+            status="failed",
             user_input=None,
             result=None,
-            error=data["error"]
-            )
-    
+            error="json_parsing_fail"
+        )
 
+def validate_ai_response(data):
+    json_data = dict(data)
+    if "explanation" in json_data:
+            return build_response(
+                status="success",
+                user_input=None,
+                result=json_data["explanation"],
+                error=None,
+        )
+    return build_response(
+                status="failed",
+                user_input=None,
+                result=None,
+                error="explanation_key_not_exist"
+            )
+   
+    
