@@ -1,7 +1,6 @@
-from utils import validate, call_api,filter_data,save_log,trace_data,parse_json,validate_ai_response
+from utils import validate, call_api,filter_data,save_log,trace_data,parse_json,validate_ai_response,ai_call
 import uuid
-from duplicate import ai_call
-# -----------------Mene abi isme step+1 nhi lgayya chatgpt ka akhri mesage dekhna ha ussne kia kha ha -------------
+from ai_call_workfllow import ai_call_proccess
 
 def main():
     
@@ -115,43 +114,32 @@ def main():
         step += 1
         log_data["post_id"] = filtered_data["result"]["id"]
         log_data["title"] = filtered_data["result"]["title"]
-    
-    ai_attempts = 0
-    while ai_attempts < 3:
         
-        loop_status = "success"
-        ai_attempts += 1
-        loop_errors = {"status_code_error", "time_out", "connection_error"}
-        ai_called = ai_call(f"status: {log_data["status"]} ,error: {log_data["error"]}")
-        if ai_called["status"] == "success":            
-            break
-        elif ai_called["error"] in loop_errors:
-            loop_status = "retry_exhausted"
-            continue
-        else:
-            loop_status = "non_retryable"
-            break
-    if loop_status != "success":
-            can_continue =False
-            log_data["ai_generated"] = "false"
-            log_data["ai_explanation"] = ai_called["status"]
-            
     
-    if can_continue:
-        parsed_json = parse_json(ai_called["result"])
-        if parsed_json["status"] != "success":
-            can_continue = False
-            log_data["ai_generated"] = "false"
-
+    ai_called = ai_call_proccess(f"status: {log_data["status"]}, error: {log_data["error"]}")
+    step += 1
+    log_data["ai_explanation"] = ai_called["result"]
     
-    if can_continue:
-        validate_parsed_json = validate_ai_response(parsed_json["result"])
-        if validate_parsed_json["status"] != "success":
-            can_continue = False
-            log_data["ai_generated"] = "false"
-    if can_continue:
+    if ai_called["status"] != "success":
+        log_data["ai_generated"] = "false"
+        trace_data(
+            request_id=request_id,
+            step_name="ai_call",
+            step_order=step,
+            status=ai_called["status"],
+            error=ai_called["error"],
+          )
+    else:
         log_data["ai_generated"] = "true"
-        log_data["ai_explanation"] = ai_called["result"]
+        trace_data(
+            request_id=request_id,
+            step_name="ai_call",
+            step_order=step,
+            status=ai_called["status"],
+            error=ai_called["error"]
+            )
+    
+    
 
     
             

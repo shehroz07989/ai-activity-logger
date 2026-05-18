@@ -1,17 +1,36 @@
-import requests 
+from utils import build_response,parse_json
+import requests
+from Internal_functions import build_specific_response
 import json
-from utils import build_response
+def parse_json(data):
+    try:
+        json_data = json.loads(data)
+        return build_response(
+            status="success",
+            user_input=None,
+            result=json_data,
+            error=None
+        )
+    except:
+        return build_response(
+            status="failed",
+            user_input=None,
+            result=None,
+            error="json_parsing_fail"
+        )
+    
+
 
 def ai_call(message):
     try:
         response = requests.post(
             url="https://openrouter.ai/api/v1/chat/completions",
             headers= {
-            "Authorization": "Bearer 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",
+            "Authorization": "Bearer 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",
             "Accept": "application/json"
             },
             data=json.dumps({
-                "model": "baidu/cobuddy:free",
+                "model": "openai/gpt-oss-120b:free",
                 "messages": [
                     {
                         "role": "system",
@@ -26,38 +45,38 @@ def ai_call(message):
             timeout=60
         )
         if response.ok:
-            return build_response(
+            return build_specific_response(
                 status="success",
-                user_input=None,
                 result=response.json()['choices'][0]['message']['content'],
-                error=None
             )
         else:
-            return build_response(
+            return build_specific_response(
                 status="ai_call_failed",
-                user_input=None,
                 result=None,
-                error=f"status_code_error {response.status_code}"
+                error_type="status_code_error",
+                status_code= response.status_code,
+                error=f"status_code_error_{response.status_code}"
             )
     except requests.exceptions.Timeout:
-        return build_response(
+        return build_specific_response(
             status="ai_call_failed",
-            user_input=None,
             result=None,
             error="time_out"
         )
     except requests.exceptions.ConnectionError:
-        return build_response(
+        return build_specific_response(
             status="ai_call_failed",
-            user_input=None,
             result=None,
             error="connection_error"
         )
     except requests.exceptions.RequestException as e:
-        return build_response(
+        return build_specific_response(
             status="ai_call_failed",
-            user_input=None,
             result=None,
+            error_type="exception",
             error= str(e)
         )
 
+result = ai_call("success")
+data = result["result"]
+print(parse_json(data))

@@ -1,8 +1,10 @@
 import json
 #------------------------- Internal responses me status me success or failed hoga ----------------
-def build_internal_response(status,result=None,error=None):
+def build_specific_response(status,result=None,error=None,error_type=None,error_detail=None,status_code=None):
     return {
         "status": status,
         "result": result,
-        "error": error
+        "error_type": error_type,
+        "error": error,
+        "status_code": status_code
     }
