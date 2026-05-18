@@ -79,4 +79,3 @@ def ai_call_proccess(data):
                 result=validate_parsed_json["result"],
                 error=None
             )
-print(ai_call_proccess(f"status: {log_data["status"]}, error: {log_data["error"]}"))
