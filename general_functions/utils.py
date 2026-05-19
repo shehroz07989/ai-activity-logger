@@ -135,7 +135,7 @@ def save_log(data):
     if data["status"] in allowed_values:
         
         try:
-            conn = sqlite3.connect("system.db")
+            conn = sqlite3.connect("sqlite/system.db")
             save = """
                 INSERT INTO logs (status, input, cleaned_input, error, post_id, title, raw_response,attempts,request_id,ai_generated,ai_explanation)
                 VALUES( ?, ?, ?, ?, ?, ?, ?,?,?,?,?)
@@ -180,7 +180,7 @@ def save_log(data):
     
 
 def trace_loger(trace_data):
-    conn = sqlite3.connect("system.db")
+    conn = sqlite3.connect("sqlite/system.db")
     cursor = conn.cursor()
     cursor.execute("""
                     INSERT INTO trace (request_id,step_name,step_order,status,error) 

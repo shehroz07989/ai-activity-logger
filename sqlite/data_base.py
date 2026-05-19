@@ -2,7 +2,7 @@ from general_functions.utils import validate
 import sqlite3
 
 def get_all_logs():
-    conn = sqlite3.connect("system.db")
+    conn = sqlite3.connect("sqlite/system.db")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute("""
@@ -20,7 +20,7 @@ def get_log_by_id(user_id:int):
     validated = validate(user_id)
     if validated["status"] != "success":
         return "validation_failed"
-    conn = sqlite3.connect("system.db")
+    conn = sqlite3.connect("sqlite/system.db")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute("""

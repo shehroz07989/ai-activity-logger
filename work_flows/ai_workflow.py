@@ -1,5 +1,7 @@
-from general_functions.utils import ai_call,parse_json,validate_ai_response,build_response
+from general_functions.utils import parse_json,build_response
 import time
+from domain_specific_functions.ai_functions import validate_ai_response,ai_call
+
 
 def ai_call_proccess(data):
     
