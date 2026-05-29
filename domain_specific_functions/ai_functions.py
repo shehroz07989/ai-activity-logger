@@ -1,16 +1,18 @@
-from general_functions.utils import build_response,build_specific_response
+from general_functions.utils import build_response,build_specific_response_for_errors
 import requests
 import json
 def validate_ai_response(data):
-    json_data = dict(data)
-    if "explanation" in json_data:
+    try:
+        json_data = dict(data)
+        if "explanation" in json_data:
             return build_response(
                 status="success",
                 user_input=None,
                 result=json_data["explanation"],
                 error=None,
-        )
-    return build_response(
+                )
+    except :
+        return build_response(
                 status="failed",
                 user_input=None,
                 result=None,
@@ -43,12 +45,12 @@ def ai_call(message):
             timeout=60
         )
         if response.ok:
-            return build_specific_response(
+            return build_specific_response_for_errors(
                 status="success",
                 result=response.json()['choices'][0]['message']['content'],
             )
         else:
-            return build_specific_response(
+            return build_specific_response_for_errors(
                 status="ai_call_failed",
                 result=None,
                 error_type="status_code_error",
@@ -56,19 +58,19 @@ def ai_call(message):
                 error=f"status_code_error_{response.status_code}"
             )
     except requests.exceptions.Timeout:
-        return build_specific_response(
+        return build_specific_response_for_errors(
             status="ai_call_failed",
             result=None,
             error="time_out"
         )
     except requests.exceptions.ConnectionError:
-        return build_specific_response(
+        return build_specific_response_for_errors(
             status="ai_call_failed",
             result=None,
             error="connection_error"
         )
     except requests.exceptions.RequestException as e:
-        return build_specific_response(
+        return build_specific_response_for_errors(
             status="ai_call_failed",
             result=None,
             error_type="exception",

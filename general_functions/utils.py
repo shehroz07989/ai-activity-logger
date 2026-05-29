@@ -1,19 +1,18 @@
 import requests
 import sqlite3
-import time
 import json
-from fastapi import HTTPException
 
-def build_specific_response(status,result=None,error=None,error_type=None,error_detail=None,status_code=None):
+def build_specific_response_for_errors(status,result=None,error=None,error_type=None,error_detail=None,status_code=None):
     return {
         "status": status,
         "result": result,
         "error_type": error_type,
         "error": error,
-        "status_code": status_code
+        "status_code": status_code,
+        "error_detail": error_detail
     }
 
-def build_response(status,user_input,result,error):
+def build_response(status,user_input=None,result=None,error=None):
     return {
         "status": status,
         "input": user_input,
@@ -109,25 +108,6 @@ def call_api(data):
     
 
 
-def filter_data(data,user_input):
-    if "id" in data and "title" in data:
-        filtered_data= {
-            "id": data.get("id"),
-            "title": data.get("title")
-        }
-    else:
-        return build_response(
-        status = "filtration_failed",
-        user_input = user_input, 
-        result = None,
-        error = "id or title dose not exist"
-        )
-    return build_response(
-        status = "success",
-        user_input = user_input, 
-        result = filtered_data,
-        error = None  
-    )
 
 def save_log(data):
     allowed_values = ["validation_failed", "api_failed", "filtration_failed", "success"]
@@ -179,32 +159,6 @@ def save_log(data):
                     )
     
 
-def trace_loger(trace_data):
-    conn = sqlite3.connect("sqlite/system.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-                    INSERT INTO trace (request_id,step_name,step_order,status,error) 
-                    VALUES (:request_id,:step_name,:step_order,:status,:error)
-                        """,trace_data) 
-    conn.commit()
-    conn.close()
-
-
-def trace_data(
-        request_id,
-        step_name,
-        step_order,
-        status,
-        error = None
-        ):
-    data = {
-        "request_id": request_id,
-        "step_name": step_name,
-        "step_order": step_order,
-        "status": status,
-        "error": error
-    }
-    trace_loger(data)
 
 def parse_json(data):
     try:
@@ -222,3 +176,8 @@ def parse_json(data):
             result=None,
             error="json_parsing_fail"
         )
+
+
+def terminate_flow(data):
+    save_log(data)
+    return data
