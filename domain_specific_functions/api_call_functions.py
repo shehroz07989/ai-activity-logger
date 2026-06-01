@@ -18,7 +18,7 @@ def filter_api_data(data):
         error = None  
     )
 def call_api(data):
-    
+   
     try:
         response = requests.get(f"https://jsonplaceholder.typicode.com/posts/{data}", timeout=2)
         if response.ok:
@@ -26,41 +26,70 @@ def call_api(data):
                 cleaned_response = response.json()
                 return build_response(
                         status = "success",
-                        user_input = data, 
+                        user_input = data,
                         result = cleaned_response,
-                        error = None
-                         )
+                        error = {
+                            "name": "invalid_json_error",
+                            "type": "temporary",
+                            "detail": "ValueError"
+                            }
+                            )
             except ValueError:
                 return build_response(
                     status = "api_failed",
-                    user_input = data, 
+                    user_input = data,
                     result = None,
-                    error = "invalid_json"
+                    error = {
+                    "name": "invalid_json_error",
+                    "type": "temporary",
+                    "detail": "ValueError"
+                    }
                     )
         else:
             return build_response(
                  status="api_failed",
                  user_input=data,
-                 error=response.status_code
+                 error={
+                     "name": "status_code_error" ,
+                     "type": "temporary",
+                     "detail": response.status_code
+                 }
             )
     except requests.exceptions.Timeout:
         return build_response(
                  status="api_failed",
                  user_input=data,
-                 error="time_out"
+                 error={
+                     "name": "time_out_error",
+                     "type": "temporary",
+                     "detail": "time_out"
+                 }
             )
     except requests.exceptions.ConnectionError:
         return build_response(
                  status="api_failed",
                  user_input=data,
-                 error="connection_error"
+                 error={
+                    "name": "connection_error",
+                    "type": "temporary",
+                    "detail": "connection_error"
+                 }
             )
     except requests.exceptions.RequestException as e:
         return build_response(
                  status="api_failed",
                  user_input=data,
-                 error=str(e)
+                 error={
+                     "name": "request_exception_error",
+                     "type": "permanent",
+                     "detail": str(e)
+                 }
             )
+   
+
+
+   
+
     
 def api_call_response_decision(data):
     errors = {503,"connection_error","time_out"}
