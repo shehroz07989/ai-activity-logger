@@ -15,16 +15,15 @@ def main_executor(function_name,input):
     }
 
     function_to_execute = function_list.get(function_name)
-    
     if not function_to_execute:
         return build_response(
             status="failed",
             user_input=input,
             error=f"function_dose_not_exist {function_name}"
         )
-    
-    
+
     return function_to_execute(input)
+    
    
 
 

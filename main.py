@@ -1,8 +1,9 @@
 import uuid
-
+import copy
 from services.main_executor import main_executor
 from general_functions.utils import terminate_flow
-from services.trace_service import trace_steps
+from services.trace_service import trace_steps,workflow_response_normalizer_for_trace
+
 
 def main():
         
@@ -24,7 +25,7 @@ def main():
         
         
         step = 1
-        trace_steps(request_id=request_id,step_name="input_validation",step_order=step)
+        trace_steps(request_id=request_id,step_name="input_validation",step_order=step) 
         validated = main_executor(input=id,function_name="validate")
         trace_steps(standard_response=validated,request_id=request_id,step_name="input_validation",step_order=step)
         log_data["status"] = validated["status"]
@@ -36,15 +37,15 @@ def main():
 
         log_data["cleaned_input"] = validated["result"]
         step += 1
-        trace_steps(request_id=request_id,step_name="api_call",step_order=step)
+        trace_steps(request_id=request_id,step_name="api_call_workflow",step_order=step)
         called_api_workflow = main_executor(function_name="api_call_workflow",input=log_data["cleaned_input"])
-        trace_steps(standard_response=called_api_workflow,request_id=request_id,step_name="api_call",step_order=step)
         log_data["status"] = called_api_workflow["status"]
         if called_api_workflow["status"] != "success":
-                log_data["error"] = called_api_workflow["error"]
+                log_data["error"] = called_api_workflow["error"]["name"]
+                trace_steps(standard_response=workflow_response_normalizer_for_trace(called_api_workflow),request_id=request_id,step_name="api_call_workflow",step_order=step)
                 log_data["attempts"] = called_api_workflow["result"]["attempts"]
                 return terminate_flow(log_data)
-        
+        trace_steps(standard_response=workflow_response_normalizer_for_trace(called_api_workflow),request_id=request_id,step_name="api_call_workflow",step_order=step)
 
 
         log_data["raw_response"] = called_api_workflow["result"]["response"]

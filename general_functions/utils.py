@@ -117,8 +117,8 @@ def save_log(data):
         try:
             conn = sqlite3.connect("sqlite/system.db")
             save = """
-                INSERT INTO logs (status, input, cleaned_input, error, post_id, title, raw_response,attempts,request_id,ai_generated,ai_explanation)
-                VALUES( ?, ?, ?, ?, ?, ?, ?,?,?,?,?)
+                INSERT INTO logs (status, input, cleaned_input, error, post_id, title, raw_response,request_id,ai_generated,ai_explanation)
+                VALUES( ?, ?, ?, ?, ?, ?, ?,?,?,?)
                 
                     """
             if isinstance (data["raw_response"],dict):
@@ -132,7 +132,7 @@ def save_log(data):
                 
             
             cursor = conn.cursor()
-            cursor.execute(save,(data["status"], data["input"], data["cleaned_input"], data["error"], data["post_id"], data["title"], data["raw_response"],data["attempts"],data["request_id"],data["ai_generated"],data["ai_explanation"]))
+            cursor.execute(save,(data["status"], data["input"], data["cleaned_input"], data["error"], data["post_id"], data["title"], data["raw_response"],data["request_id"],data["ai_generated"],data["ai_explanation"]))
             conn.commit()
             
             return build_response(
