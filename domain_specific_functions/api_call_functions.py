@@ -62,7 +62,7 @@ def call_api(data):
                  error={
                      "name": "time_out_error",
                      "type": "temporary",
-                     "detail": "time_out"
+                     "detail": "requests.exceptions.Timeout_error"
                  }
             )
     except requests.exceptions.ConnectionError:
@@ -72,7 +72,7 @@ def call_api(data):
                  error={
                     "name": "connection_error",
                     "type": "temporary",
-                    "detail": "connection_error"
+                    "detail": "requests.exceptions.ConnectionError"
                  }
             )
     except requests.exceptions.RequestException as e:

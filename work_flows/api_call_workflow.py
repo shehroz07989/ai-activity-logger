@@ -23,12 +23,7 @@ def api_call_workflow(data):
                         continue
                     elif retry_policy_response["result"]["action"] == "terminate":
                         break
-                else:
-                    called_api["result"] = {
-                        "response": called_api["result"],
-                        "attempts": current_attempts
-                    }
-                    return called_api
+        
         
     called_api["result"] = {
                     "response": called_api["result"],

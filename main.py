@@ -1,8 +1,8 @@
 import uuid
-import copy
 from services.main_executor import main_executor
 from general_functions.utils import terminate_flow
 from services.trace_service import trace_steps,workflow_response_normalizer_for_trace
+
 
 
 def main():
@@ -17,7 +17,6 @@ def main():
                     "error": None,       
                     "title": None,
                     "raw_response": None,
-                    "attempts" : None,
                     "request_id": request_id,
                     "ai_generated": None,
                     "ai_explanation": None
@@ -49,7 +48,7 @@ def main():
 
 
         log_data["raw_response"] = called_api_workflow["result"]["response"]
-        log_data["attempts"] = called_api_workflow["result"]["attempts"]
+        
         step += 1
 
         trace_steps(request_id=request_id,step_name="api_response_filtration",step_order=step)
@@ -69,11 +68,11 @@ def main():
         step += 1
 
         trace_steps(request_id=request_id,step_name="ai_call_workflow",step_order=step)
-        ai_called_workflow = main_executor(function_name="ai_call_proccess",input=f"status: {log_data["status"]} error: {log_data["error"]}")
+        ai_called_workflow = main_executor(function_name="ai_call_workflow",input=f"status: {log_data["status"]} error: {log_data["error"]}")
         trace_steps(standard_response=ai_called_workflow,request_id=request_id,step_name="ai_call_workflow",step_order=step)
         log_data["status"] = ai_called_workflow["status"]
         if ai_called_workflow["status"] != "success":
-                log_data["error"] = ai_called_workflow["error"]
+                log_data["error"] = ai_called_workflow["error"] 
                 log_data["ai_generated"] = "false"
                 return terminate_flow(log_data)
         
@@ -81,7 +80,7 @@ def main():
 
 
         log_data["ai_generated"] = "true"
-        log_data["ai_explanation"] = ai_called_workflow["result"]
+        log_data["ai_explanation"] = ai_called_workflow["result"]["response"]
 
         step += 1
 

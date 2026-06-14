@@ -48,63 +48,7 @@ def validate(data):
                          )
 
     
-def call_api(data):
-   
-    try:
-        response = requests.get(f"https://jsonplaceholder.typicode.com/posts/{data}", timeout=2)
-        if 199 < response.status_code < 300:
-            try:
-                cleaned_response = response.json()
-                return build_response(
-                        status = "success",
-                        user_input = data, 
-                        result = cleaned_response,
-                        error = None
-                         )
-            except ValueError:
-                return build_response(
-                            status = "api_failed",
-                            user_input = data, 
-                            result = None,
-                            error = "invalid_json"
-                            )
-        elif response.status_code == 503:
-            return build_response(
-                            status = "api_failed",
-                            user_input = data, 
-                            result = None,
-                            error = "error_503"
-                            )
-        else:
-            return build_response(
-                            status = "api_failed",
-                            user_input = data, 
-                            result = None,
-                            error = f"status code error {response.status_code} {response.text}"
-                            )
 
-
-    except requests.exceptions.Timeout:
-        return build_response(
-        status = "api_failed",
-        user_input = data, 
-        result = None,
-        error = "time_out"
-           )
-    except requests.exceptions.ConnectionError:
-        return build_response(
-        status = "api_failed",
-        user_input = data, 
-        result = None,
-        error = "connection_error"
-        )
-    except requests.RequestException:
-        return build_response(
-        status = "api_failed",
-        user_input = data, 
-        result = None,
-        error = "request_failed"
-        )
     
 
 

@@ -1,5 +1,4 @@
 import sqlite3
-from general_functions.utils import build_response
 def workflow_response_normalizer_for_trace(data):
     payload = {
         "status":data["status"],
