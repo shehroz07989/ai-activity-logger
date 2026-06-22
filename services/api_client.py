@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from sqlite.data_base import get_all_logs,get_log_by_id
+from domain_specific_functions.api_client_functions import get_all_logs,get_log_by_id
 
 
 
