@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException
-import sqlite3
 from sqlite.data_base import get_all_logs,get_log_by_id
-from general_functions.utils import validate
+
 
 
 app = FastAPI()

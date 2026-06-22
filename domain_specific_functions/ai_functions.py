@@ -1,6 +1,10 @@
 from general_functions.utils import build_response,build_specific_response_for_errors
 import requests
+from dotenv import load_dotenv
+import os
 import json
+load_dotenv("secure_files/.env")
+api_key = os.getenv("OPENROUTER_KEY")
 def validate_ai_response(data):
     try:
         json_data = dict(data)
@@ -11,7 +15,7 @@ def validate_ai_response(data):
                 result=json_data["explanation"],
                 error=None,
                 )
-    except :
+    except TypeError:
         return build_response(
                 status="failed",
                 user_input=None,
@@ -26,7 +30,7 @@ def ai_call(message):
         response = requests.post(
             url="https://openrouter.ai/api/v1/chat/completions",
             headers= {
-            "Authorization": "Bearer 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",
+            "Authorization":f"Bearer {api_key}" ,
             "Accept": "application/json"
             },
             data=json.dumps({
@@ -45,35 +49,50 @@ def ai_call(message):
             timeout=60
         )
         if response.ok:
-            return build_specific_response_for_errors(
+            return build_response(
                 status="success",
                 result=response.json()['choices'][0]['message']['content'],
+                error={
+                            "name": None,
+                            "type": None,
+                            "detail": None
+                            }
             )
         else:
-            return build_specific_response_for_errors(
+            return build_response(
                 status="ai_call_failed",
                 result=None,
-                error_type="status_code_error",
-                status_code= response.status_code,
-                error=f"status_code_error_{response.status_code}"
+                error={
+                    "name": "status_code_error",
+                    "type":"temporary",
+                    "detail": f"status_code_error_{response.status_code}"
+                }
             )
     except requests.exceptions.Timeout:
-        return build_specific_response_for_errors(
+        return build_response(
             status="ai_call_failed",
-            result=None,
-            error="time_out"
+            error={
+                     "name": "time_out_error",
+                     "type": "temporary",
+                     "detail": "requests.exceptions.Timeout_error"
+                 }
         )
     except requests.exceptions.ConnectionError:
-        return build_specific_response_for_errors(
+        return build_response(
             status="ai_call_failed",
-            result=None,
-            error="connection_error"
+            error={
+                    "name": "connection_error",
+                    "type": "temporary",
+                    "detail": "requests.exceptions.ConnectionError"
+                 }
         )
     except requests.exceptions.RequestException as e:
-        return build_specific_response_for_errors(
+        return build_response(
             status="ai_call_failed",
-            result=None,
-            error_type="exception",
-            error= str(e)
+            error= {
+                     "name": "request_exception_error",
+                     "type": "permanent",
+                     "detail": str(e)
+                 }
         )
 

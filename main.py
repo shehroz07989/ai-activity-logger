@@ -69,7 +69,7 @@ def main():
 
         trace_steps(request_id=request_id,step_name="ai_call_workflow",step_order=step)
         ai_called_workflow = main_executor(function_name="ai_call_workflow",input=f"status: {log_data["status"]} error: {log_data["error"]}")
-        trace_steps(standard_response=ai_called_workflow,request_id=request_id,step_name="ai_call_workflow",step_order=step)
+        trace_steps(standard_response=workflow_response_normalizer_for_trace(ai_called_workflow),request_id=request_id,step_name="ai_call_workflow",step_order=step)
         log_data["status"] = ai_called_workflow["status"]
         if ai_called_workflow["status"] != "success":
                 log_data["error"] = ai_called_workflow["error"] 
