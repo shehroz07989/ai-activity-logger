@@ -2,15 +2,6 @@ import requests
 import sqlite3
 import json
 
-def build_specific_response_for_errors(status,result=None,error=None,error_type=None,error_detail=None,status_code=None):
-    return {
-        "status": status,
-        "result": result,
-        "error_type": error_type,
-        "error": error,
-        "status_code": status_code,
-        "error_detail": error_detail
-    }
 
 def build_response(status,user_input=None,result=None,error=None):
     return {

@@ -11,7 +11,7 @@ def ai_call_workflow(data):
 
     if ai_called["status"] != "success":
         trace_attempts(step_name="ai_call_workflow",attempt=current_attempts,data=ai_called)
-        retry_policy_response = retry_policy(ai_called["error"])
+        retry_policy_response = retry_policy(ai_called["error"])#In retry Policy Unknown "type" bug Remains etc "temporary","permanent"
         if retry_policy_response["result"]["action"] == "retry":
             retry = retry_policy_response["result"]["payload"]["max_attempts"] 
             while current_attempts < retry:

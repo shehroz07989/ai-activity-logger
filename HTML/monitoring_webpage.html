@@ -1,0 +1,118 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Monitoring</title>
+</head>
+
+<body>
+
+<div class="terminal">
+
+    <h2>System Monitoring</h2>
+
+    <div class="row">
+        <span>Total Calls:</span>
+        <span id="totalCalls">Loading...</span>
+    </div>
+
+    <div class="row">
+        <span>Success Rate:</span>
+        <span id="successRate">Loading...</span>
+    </div>
+
+    <div class="row">
+        <span>Failure Rate:</span>
+        <span id="failureRate">Loading...</span>
+    </div>
+
+    <div class="row">
+        <span>AI Success Rate:</span>
+        <span id="aiSuccessRate">Loading...</span>
+    </div>
+
+    <hr>
+
+    <div class="row">
+        <span>Success</span>
+        <span id="success">Loading...</span>
+    </div>
+
+    <div class="row">
+        <span>Validation Failed</span>
+        <span id="validation">Loading...</span>
+    </div>
+
+    <div class="row">
+        <span>API Failed</span>
+        <span id="api">Loading...</span>
+    </div>
+
+    <button onclick="loadData()">Refresh</button>
+
+</div>
+
+<script>
+async function loadData() {
+
+    try {
+
+        const response = await fetch("http://127.0.0.1:8000/metrics");
+
+        if (!response.ok) {
+            throw new Error("Server Error");
+        }
+        
+        const data = await response.json();
+        if (data.summary == null ) {
+            document.getElementById("success").textContent = data.status_breakdown.success;
+            document.getElementById("validation").textContent = data.status_breakdown.validation_failed;
+            document.getElementById("api").textContent = data.status_breakdown.api_failed;
+
+            document.getElementById("totalCalls").textContent = "something_went_wrong";
+            document.getElementById("successRate").textContent = "something_went_wrong";
+            document.getElementById("failureRate").textContent = "something_went_wrong";
+            document.getElementById("aiSuccessRate").textContent = "something_went_wrong";
+        }
+       
+
+        else if  (data.status_breakdown == null) {
+            document.getElementById("totalCalls").textContent = data.summary.total_calls;
+            document.getElementById("successRate").textContent = data.summary.success_rate + "%";
+            document.getElementById("failureRate").textContent = data.summary.failure_rate + "%";
+            document.getElementById("aiSuccessRate").textContent = data.summary.ai_success_rate + "%";
+
+            document.getElementById("success").textContent = "something_went_wrong";
+            document.getElementById("validation").textContent = "something_went_wrong";
+            document.getElementById("api").textContent = "something_went_wrong";
+
+        }
+        else {
+        document.getElementById("totalCalls").textContent = data.summary.total_calls;
+        document.getElementById("successRate").textContent = data.summary.success_rate + "%";
+        document.getElementById("failureRate").textContent = data.summary.failure_rate + "%";
+        document.getElementById("aiSuccessRate").textContent = data.summary.ai_success_rate + "%";
+
+        document.getElementById("success").textContent = data.status_breakdown.success;
+        document.getElementById("validation").textContent = data.status_breakdown.validation_failed;
+        document.getElementById("api").textContent = data.status_breakdown.api_failed;
+        }
+
+    } catch (error)
+    {
+
+        alert("Could not load data.");
+
+    }
+
+}
+
+loadData();
+</script>
+
+</body>
+
+
+
+</html>
