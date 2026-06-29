@@ -171,7 +171,7 @@ project/
 
 ## Roadmap
 
-- [ ] Monitoring dashboard (success rate, fail rate, error trends)
+- [☑️ ] Monitoring dashboard (success rate, fail rate, error trends)
 - [ ] Automated scheduled runs
 - [ ] Multi-agent workflow tracing
 - [ ] Production deployment (VPS + background process)
