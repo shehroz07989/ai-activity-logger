@@ -5,9 +5,9 @@ from services.trace_service import trace_steps,workflow_response_normalizer_for_
 
 
 
-def main():
+def ai_activity_logger(user_input):
         
-        id = input("Enter id: ")
+        id = user_input
         request_id = str(uuid.uuid4())
         log_data = {
                     "input": id,
@@ -93,4 +93,4 @@ def main():
         trace_steps(standard_response=saved_log,request_id=request_id,step_name="save_log",step_order=step)
         return log_data
 
-print(main())
+
