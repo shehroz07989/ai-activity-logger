@@ -44,8 +44,8 @@ def validate(data):
 
 
 
-def save_log(data):
-    allowed_values = ["validation_failed", "api_failed", "filtration_failed", "success"]
+def save_log(data):  #  It needs improvement!!!!  -------------------------------------------
+    allowed_values = ["validation_failed", "api_failed", "filtration_failed", "ai_failed", "ai_call_failed", "ai_workflow_failed", "success"]
     
     if data["status"] in allowed_values:
         
@@ -64,6 +64,9 @@ def save_log(data):
                 pass
             else:
                 data["raw_response"] = str(data["raw_response"])
+
+            if isinstance (data["error"], dict):
+                data["error"] = json.dumps(data["error"])
                 
             
             cursor = conn.cursor()

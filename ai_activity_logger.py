@@ -68,10 +68,10 @@ def ai_activity_logger(user_input):
         step += 1
 
         trace_steps(request_id=request_id,step_name="ai_call_workflow",step_order=step)
-        ai_called_workflow = main_executor(function_name="ai_call_workflow",input=f"status: {log_data["status"]} error: {log_data["error"]}")
+        ai_called_workflow = main_executor(function_name="ai_call_workflow",input=f"status: {log_data['status']} error: {log_data['error']}")
         trace_steps(standard_response=workflow_response_normalizer_for_trace(ai_called_workflow),request_id=request_id,step_name="ai_call_workflow",step_order=step)
         log_data["status"] = ai_called_workflow["status"]
-        if ai_called_workflow["status"] != "success":
+        if ai_called_workflow["status"] != "success":  
                 log_data["error"] = ai_called_workflow["error"] 
                 log_data["ai_generated"] = "false"
                 return terminate_flow(log_data)
@@ -94,3 +94,4 @@ def ai_activity_logger(user_input):
         return log_data
 
 
+print(ai_activity_logger(2))
