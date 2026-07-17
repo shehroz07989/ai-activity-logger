@@ -34,7 +34,7 @@ def ai_call(message):
             "Accept": "application/json"
             },
             data=json.dumps({
-                "model": "openai/gpt-oss-120b:free",
+                "model": "openrouter/free",
                 "messages": [
                     {
                         "role": "system",
