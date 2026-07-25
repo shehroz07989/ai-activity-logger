@@ -93,5 +93,3 @@ def ai_activity_logger(user_input):
         trace_steps(standard_response=saved_log,request_id=request_id,step_name="save_log",step_order=step)
         return log_data
 
-
-print(ai_activity_logger(2))
