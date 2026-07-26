@@ -2,4 +2,8 @@ fastapi
 uvicorn
 requests
 python-dotenv
+<<<<<<< HEAD
 schedule
+=======
+schedule
+>>>>>>> d7639e9 (Fix Bugs in  Retry Policy)

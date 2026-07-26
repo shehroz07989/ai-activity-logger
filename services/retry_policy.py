@@ -19,4 +19,5 @@ def retry_policy(error):
             }
         )
     else: # This is Bug if wrongly "type = Permanent or something" retry policy crash
-        raise "Bug if wrongly type = Permanent or something retry policy crash"
+        raise ValueError( "Bug if wrongly type = Permanent or something retry policy crash")
+
