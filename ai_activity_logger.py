@@ -72,7 +72,12 @@ def ai_activity_logger(user_input):
         step += 1
 
         trace_steps(request_id=request_id,step_name="ai_call_workflow",step_order=step)
-        ai_called_workflow = main_executor(function_name="ai_call_workflow",input=f"status: {log_data['status']} error: {log_data['error']}")
+        ai_called_workflow = main_executor(
+                function_name="ai_call_workflow",
+                input={
+                        "message": f"status: {log_data['status']} error: {log_data['error']}",
+                        "request_id": log_data["request_id"],
+                        })
         trace_steps(standard_response=workflow_response_normalizer_for_trace(ai_called_workflow),request_id=request_id,step_name="ai_call_workflow",step_order=step)
         log_data["status"] = ai_called_workflow["status"]
         if ai_called_workflow["status"] != "success":  
@@ -97,8 +102,5 @@ def ai_activity_logger(user_input):
         trace_steps(standard_response=saved_log,request_id=request_id,step_name="save_log",step_order=step)
         return log_data
 
-<<<<<<< HEAD
-=======
 
 print(ai_activity_logger(5))
->>>>>>> d7639e9 (Fix Bugs in  Retry Policy)

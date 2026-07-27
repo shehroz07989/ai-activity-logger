@@ -1,4 +1,6 @@
 import sqlite3
+
+
 def trace_attempts(step_name,attempt,data,request_id):
     conn = sqlite3.connect("sqlite/system.db")
     cursor = conn.cursor()

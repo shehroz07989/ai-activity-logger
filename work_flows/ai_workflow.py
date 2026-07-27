@@ -6,18 +6,18 @@ from services.retry_policy import retry_policy
 
 
 def ai_call_workflow(data):
-    ai_called = ai_call(data)
+    ai_called = ai_call(data["message"])
     current_attempts = 1
 
     if ai_called["status"] != "success":
-        trace_attempts(step_name="ai_call_workflow",attempt=current_attempts,data=ai_called)
+        trace_attempts(step_name="ai_call_workflow",attempt=current_attempts,data=ai_called,request_id=data["request_id"])
         retry_policy_response = retry_policy(ai_called["error"])#In retry Policy Unknown "type" bug Remains etc "temporary","permanent"
         if retry_policy_response["result"]["action"] == "retry":
             retry = retry_policy_response["result"]["payload"]["max_attempts"] 
             while current_attempts < retry:
                 current_attempts += 1
-                ai_called = ai_call(data)
-                trace_attempts(step_name="ai_call_workflow",attempt=current_attempts,data=ai_called)
+                ai_called = ai_call(data["message"])
+                trace_attempts(step_name="ai_call_workflow",attempt=current_attempts,data=ai_called,request_id=data["request_id"])
                 if ai_called["status"] != "success":
                     if current_attempts == retry:
                         return build_response(
