@@ -1,6 +1,6 @@
 secure_files/
 __pycache__/
-sqlite/
+sqlite/system.db
 extra_1.py
 extra_2.py
 extra_3.py

@@ -4,31 +4,18 @@ from services.attempts_trace import trace_attempts
 from services.retry_policy import retry_policy
 
 def api_call_workflow(data):
-<<<<<<< HEAD
-    called_api = call_api(data)
-    current_attempts = 1 
-    
-    if called_api["status"] != "success": 
-        trace_attempts(step_name="api_call_workflow",attempt=current_attempts,data=called_api)
-=======
     called_api = call_api(data["cleaned_input"])
     current_attempts = 1 
     
     if called_api["status"] != "success": 
         trace_attempts(step_name="api_call_workflow",attempt=current_attempts,data=called_api,request_id=data["request_id"])
->>>>>>> d7639e9 (Fix Bugs in  Retry Policy)
         retry_policy_response = retry_policy(called_api["error"]) #In retry Policy Unknown "type" bug Remains etc "temporary","permanent"
         if retry_policy_response["result"]["action"] == "retry":
             retry = retry_policy_response["result"]["payload"]["max_attempts"]
             while current_attempts < retry:
                 current_attempts += 1
-<<<<<<< HEAD
-                called_api = call_api(data)
-                trace_attempts(step_name="api_call_workflow",attempt=current_attempts,data=called_api)
-=======
                 called_api = call_api(data["cleaned_input"])
                 trace_attempts(step_name="api_call_workflow",attempt=current_attempts,data=called_api,request_id=data["request_id"])
->>>>>>> d7639e9 (Fix Bugs in  Retry Policy)
                 if called_api["status"] != "success":
                     retry_policy_response = retry_policy(called_api["error"])
                     if retry_policy_response["result"]["action"] == "retry":
