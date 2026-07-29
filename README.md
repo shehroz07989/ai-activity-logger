@@ -1,7 +1,6 @@
-# AI Activity Logger
+#AI Reliability SDK
 
-> Reliability and observability infrastructure for AI-powered workflows —
-> retry logic, decision tracing, failure recovery, and execution transparency.
+> AI Reliability SDK for AI developers to understand AI workflows. It doesn't just show what happened. It helps you understand why.
 
 ---
 

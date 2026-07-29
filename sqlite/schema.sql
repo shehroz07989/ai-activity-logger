@@ -1,5 +1,3 @@
-SCHEMA = """
-
 CREATE TABLE IF NOT EXISTS logs (
 
     unique_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,7 +27,6 @@ CREATE TABLE IF NOT EXISTS logs (
 );
 
 
-
 CREATE TABLE IF NOT EXISTS trace (
 
     trace_id INTEGER PRIMARY KEY,
@@ -45,6 +42,7 @@ CREATE TABLE IF NOT EXISTS trace (
     error TEXT,
 
     workflow_attempts INTEGER,
+
 
     UNIQUE(request_id, step_name, step_order)
 
@@ -73,5 +71,3 @@ CREATE TABLE IF NOT EXISTS attempts (
         REFERENCES trace(trace_id)
 
 );
-
-"""
