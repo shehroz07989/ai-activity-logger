@@ -1,11 +1,11 @@
 import schedule 
 import time
-from ai_activity_logger import ai_activity_logger
+from main import run
 
 def scheduler():
     try:
         print("scheduler is running")
-        ai_activity_logger(33)
+        run(33)
     except Exception as e:
         print(f"Runtime Error: {str(e)}")
 schedule.every(1).hours.do(scheduler)

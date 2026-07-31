@@ -11,10 +11,11 @@ def ai_call_workflow(data):
 
     if ai_called["status"] != "success":
         trace_attempts(step_name="ai_call_workflow",attempt=current_attempts,data=ai_called,request_id=data["request_id"])
-        retry_policy_response = retry_policy(ai_called["error"])#In retry Policy Unknown "type" bug Remains etc "temporary","permanent"
-        if retry_policy_response["result"]["action"] == "retry":
+        retry_policy_response = retry_policy(ai_called["error"])
+        action = retry_policy_response["result"]["action"]
+        if action == "retry":
             retry = retry_policy_response["result"]["payload"]["max_attempts"] 
-            while current_attempts < retry:
+            while True:
                 current_attempts += 1
                 ai_called = ai_call(data["message"])
                 trace_attempts(step_name="ai_call_workflow",attempt=current_attempts,data=ai_called,request_id=data["request_id"])
@@ -30,7 +31,8 @@ def ai_call_workflow(data):
                                     
                         )
                     retry_policy_response = retry_policy(ai_called["error"])
-                    if retry_policy_response["result"]["action"] == "terminate":
+                    action = retry_policy_response["result"]["action"] 
+                    if action == "terminate":
                         return build_response(
                             status="ai_failed",
                             result={
@@ -39,11 +41,21 @@ def ai_call_workflow(data):
                                         },
                             error=ai_called["error"]
                                 )
-                    if retry_policy_response["result"]["action"] == "retry":
+                    if action == "retry":
                         time.sleep(2**current_attempts)
                         continue
                     
-        
+        elif action == "terminate":
+            return build_response(
+                                    status="ai_failed",
+                                    result={
+                                            "response": ai_called["result"],
+                                            "attempts": current_attempts
+                                                },
+                                    error=ai_called["error"]
+                                        )
+        else: 
+            raise TypeError(f"Unexpected retry policy action {action}")
 
     parsed_json = parse_json(ai_called["result"])
     

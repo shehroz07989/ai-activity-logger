@@ -18,12 +18,14 @@ def api_call_workflow(data):
                 trace_attempts(step_name="api_call_workflow",attempt=current_attempts,data=called_api,request_id=data["request_id"])
                 if called_api["status"] != "success":
                     retry_policy_response = retry_policy(called_api["error"])
-                    if retry_policy_response["result"]["action"] == "retry":
+                    action = retry_policy_response["result"]["action"]
+                    if action == "retry":
                         time.sleep(2**current_attempts)
                         continue
-                    elif retry_policy_response["result"]["action"] == "terminate":
+                    elif  action == "terminate":
                         break
-        
+                    else: 
+                        raise TypeError(f"Unexpected retry policy action {action}")
         
     called_api["result"] = {
                     "response": called_api["result"],

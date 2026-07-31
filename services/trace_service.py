@@ -32,4 +32,4 @@ def trace_steps(request_id=None,step_name=None,step_order=None,standard_response
                    workflow_attempts = excluded.workflow_attempts
                     """,(status,request_id,step_name,step_order,error,workflow_attempts))
     conn.commit()
-    conn.close()
+    conn.close() 

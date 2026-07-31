@@ -1,6 +1,8 @@
-#AI Reliability SDK
+AI Reliability SDK
 
-> AI Reliability SDK for AI developers to understand AI workflows. It doesn't just show what happened. It helps you understand why.
+> AI Reliability SDK for AI developers to understand AI workflows. 
+> It doesn't just show what happened. 
+>It helps you understand why.
 
 ---
 

@@ -14,12 +14,12 @@ def build_response(status,user_input=None,result=None,error=None):
 def validate(data):
     try:
         cleaned_data = int(data)
-    except ValueError:
+    except (ValueError,TypeError):
         return build_response(
                 status="validation_failed",
                 user_input=data,
                 result=None,
-                error="input must be integer"
+                error="input_must_be_integer"
                 )
     
     if cleaned_data < 1 or cleaned_data > 100:
@@ -29,7 +29,7 @@ def validate(data):
             result=None,
             error="input must be between 1-100"
             )
-    
+
     
     return build_response(
                         status = "success",
@@ -39,9 +39,6 @@ def validate(data):
                          )
 
     
-
-    
-
 
 
 def save_log(data):  #  It needs improvement!!!!  -------------------------------------------

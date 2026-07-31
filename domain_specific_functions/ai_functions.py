@@ -15,15 +15,20 @@ def validate_ai_response(data):
                 result=json_data["explanation"],
                 error=None,
                 )
-    except TypeError:
+        else:
+            return build_response(
+                        status="failed",
+                        user_input=None,
+                        result=None,
+                        error="explanation_key_missing"
+                        )
+    except (ValueError,TypeError):
         return build_response(
                 status="failed",
                 user_input=None,
                 result=None,
-                error="explanation_key_not_exist"
+                error="invalid_ai_response_format"
             )
-   
-    
 
 def ai_call(message):
     try:
