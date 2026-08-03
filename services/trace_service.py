@@ -1,4 +1,4 @@
-import sqlite3
+from sqlite.connection import get_connection
 def workflow_response_normalizer_for_trace(data):
     payload = {
         "status":data["status"],
@@ -20,9 +20,9 @@ def trace_steps(request_id=None,step_name=None,step_order=None,standard_response
         error = None
         workflow_attempts = None
         
-    conn = sqlite3.connect("sqlite/system.db")
-    cursor = conn.cursor()
-    cursor.execute("""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
                     INSERT INTO trace(status,request_id,step_name,step_order,error,workflow_attempts)
                    VALUES (?,?,?,?,?,?)
                    ON CONFLICT (request_id, step_name, step_order) 
@@ -31,5 +31,4 @@ def trace_steps(request_id=None,step_name=None,step_order=None,standard_response
                    error = excluded.error,
                    workflow_attempts = excluded.workflow_attempts
                     """,(status,request_id,step_name,step_order,error,workflow_attempts))
-    conn.commit()
-    conn.close() 
+        conn.commit() # Transaction Policy must be separate in the future.

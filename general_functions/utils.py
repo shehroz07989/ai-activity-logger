@@ -1,6 +1,5 @@
-import requests
-import sqlite3
 import json
+from sqlite.connection import get_connection
 
 
 def build_response(status,user_input=None,result=None,error=None):
@@ -47,7 +46,6 @@ def save_log(data):  #  It needs improvement!!!!  ------------------------------
     if data["status"] in allowed_values:
         
         try:
-            conn = sqlite3.connect("sqlite/system.db")
             save = """
                 INSERT INTO logs (status, input, cleaned_input, error, post_id, title, raw_response,request_id,ai_generated,ai_explanation)
                 VALUES( ?, ?, ?, ?, ?, ?, ?,?,?,?)
@@ -65,10 +63,11 @@ def save_log(data):  #  It needs improvement!!!!  ------------------------------
             if isinstance (data["error"], dict):
                 data["error"] = json.dumps(data["error"])
                 
-            
-            cursor = conn.cursor()
-            cursor.execute(save,(data["status"], data["input"], data["cleaned_input"], data["error"], data["post_id"], data["title"], data["raw_response"],data["request_id"],data["ai_generated"],data["ai_explanation"]))
-            conn.commit()
+            with get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(save,(data["status"], data["input"], data["cleaned_input"], data["error"], data["post_id"], data["title"], data["raw_response"],data["request_id"],data["ai_generated"],data["ai_explanation"]))
+                conn.commit() # Transaction Policy must be separate in the future.
+
             
             return build_response(
                 status = "success",
@@ -83,8 +82,7 @@ def save_log(data):  #  It needs improvement!!!!  ------------------------------
                 result = None,
                 error = str(e), 
                     )
-        finally:
-            conn.close()
+        
     else:
          return build_response(
                 status = "status_failed",
